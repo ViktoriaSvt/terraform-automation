@@ -12,23 +12,26 @@ provider "azurerm" {
   subscription_id = "488510a2-c6c2-4be1-b485-e6a4a5ef542a"
 }
 
+
 resource "azurerm_resource_group" "db" {
   name     = var.resource_group_name
   location = var.resource_group_location
 }
 
+
 resource "azurerm_service_plan" "app-sp" {
   name                = var.app_service_plan_name
-  resource_group_name = var.resource_group_name
-  location            = var.resource_group_location
+  resource_group_name = azurerm_resource_group.db.name
+  location            = azurerm_resource_group.db.location
   os_type             = "Linux"
   sku_name            = "F1"
 }
 
+
 resource "azurerm_mssql_server" "db-server" {
   name                         = var.sql_server_name
-  resource_group_name          = var.resource_group_name
-  location                     = var.resource_group_location
+  resource_group_name          = azurerm_resource_group.db.name
+  location                     = azurerm_resource_group.db.location
   version                      = "12.0"
   administrator_login          = var.sql_admin_username
   administrator_login_password = var.sql_admin_password
@@ -37,6 +40,7 @@ resource "azurerm_mssql_server" "db-server" {
     environment = "production"
   }
 }
+
 
 resource "azurerm_mssql_database" "example" {
   name           = var.sql_database_name
@@ -57,6 +61,7 @@ resource "azurerm_mssql_database" "example" {
   }
 }
 
+
 resource "azurerm_mssql_firewall_rule" "firewall-rule" {
   name             = var.firewall_rule_name
   server_id        = azurerm_mssql_server.db-server.id
@@ -64,9 +69,10 @@ resource "azurerm_mssql_firewall_rule" "firewall-rule" {
   end_ip_address   = "0.0.0.0"
 }
 
+
 resource "azurerm_linux_web_app" "app" {
   name                = var.app_service_name
-  resource_group_name = var.resource_group_name
+  resource_group_name = azurerm_resource_group.db.name
   location            = azurerm_service_plan.app-sp.location
   service_plan_id     = azurerm_service_plan.app-sp.id
 
@@ -83,6 +89,7 @@ resource "azurerm_linux_web_app" "app" {
     value = "Data Source=tcp:${azurerm_mssql_server.db-server.fully_qualified_domain_name},1433;Initial Catalog=${azurerm_mssql_database.example.name};User ID=${azurerm_mssql_server.db-server.administrator_login};Password=${azurerm_mssql_server.db-server.administrator_login_password};Trusted_Connection=False;MultipleActiveResultSets=True;"
   }
 }
+
 
 resource "azurerm_app_service_source_control" "contact_book_sc" {
   app_id                 = azurerm_linux_web_app.app.id
