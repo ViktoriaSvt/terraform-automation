@@ -22,7 +22,7 @@ jobs:
         run: terraform init
 
       - name: Format Terraform files
-        run: terraform fmt -recursive
+        run: terraform fmt -check -recursive
 
       - name: Validate Terraform configuration
         run: terraform validate
