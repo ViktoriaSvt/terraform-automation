@@ -12,12 +12,10 @@ provider "azurerm" {
   subscription_id = "488510a2-c6c2-4be1-b485-e6a4a5ef542a"
 }
 
-
 resource "azurerm_resource_group" "db" {
   name     = var.resource_group_name
   location = var.resource_group_location
 }
-
 
 resource "azurerm_service_plan" "app-sp" {
   name                = var.app_service_plan_name
@@ -26,7 +24,6 @@ resource "azurerm_service_plan" "app-sp" {
   os_type             = "Linux"
   sku_name            = "F1"
 }
-
 
 resource "azurerm_mssql_server" "db-server" {
   name                         = var.sql_server_name
@@ -41,7 +38,6 @@ resource "azurerm_mssql_server" "db-server" {
   }
 }
 
-
 resource "azurerm_mssql_database" "example" {
   name           = var.sql_database_name
   server_id      = azurerm_mssql_server.db-server.id
@@ -49,7 +45,6 @@ resource "azurerm_mssql_database" "example" {
   license_type   = "LicenseIncluded"
   sku_name       = "Basic"
   zone_redundant = false
-
   storage_account_type = "Local"
 
   tags = {
@@ -61,14 +56,12 @@ resource "azurerm_mssql_database" "example" {
   }
 }
 
-
 resource "azurerm_mssql_firewall_rule" "firewall-rule" {
   name             = var.firewall_rule_name
   server_id        = azurerm_mssql_server.db-server.id
   start_ip_address = "0.0.0.0"
   end_ip_address   = "0.0.0.0"
 }
-
 
 resource "azurerm_linux_web_app" "app" {
   name                = var.app_service_name
@@ -89,7 +82,6 @@ resource "azurerm_linux_web_app" "app" {
     value = "Data Source=tcp:${azurerm_mssql_server.db-server.fully_qualified_domain_name},1433;Initial Catalog=${azurerm_mssql_database.example.name};User ID=${azurerm_mssql_server.db-server.administrator_login};Password=${azurerm_mssql_server.db-server.administrator_login_password};Trusted_Connection=False;MultipleActiveResultSets=True;"
   }
 }
-
 
 resource "azurerm_app_service_source_control" "contact_book_sc" {
   app_id                 = azurerm_linux_web_app.app.id
