@@ -1,4 +1,4 @@
-name: Terraform Deploy Workflow onghu
+name: Terraform Deploy Workflow
 
 on:
   push:
